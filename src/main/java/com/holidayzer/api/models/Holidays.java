@@ -2,11 +2,13 @@ package com.holidayzer.api.models;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class Holidays {
   private static final Map<LocalDate, String> holidays = new LinkedHashMap<>();
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
   public static final void init() {
     holidays.put(LocalDate.of(2024, 1, 01), "Confraternização Mundial");
@@ -26,8 +28,7 @@ public final class Holidays {
   }
 
   public static final String getFormattedDate(LocalDate date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    return date.format(formatter);
+    return date.format(Holidays.formatter);
   }
 
   public static final Map<String, String> getAllHolidays() {
@@ -36,9 +37,32 @@ public final class Holidays {
     }
     Map<String, String> formattedHolidays = new LinkedHashMap<>();
 
-    for (LocalDate holidayDate: holidays.keySet()) {
+    for (LocalDate holidayDate : holidays.keySet()) {
       formattedHolidays.put(getFormattedDate(holidayDate), holidays.get(holidayDate));
     }
     return formattedHolidays;
+  }
+
+  public static String getHolidayByDate(String date) {
+    if (holidays.isEmpty()) {
+      Holidays.init();
+    }
+
+    LocalDate parsedDate;
+    try {
+      parsedDate = LocalDate.parse(date, formatter);
+    } catch (DateTimeParseException e) {
+      return "Date " + date + " is not valid!";
+    }
+    if (parsedDate.getYear() != 2024) {
+      return "This API only supports 2024 year!";
+    }
+    String holiday = holidays.get(parsedDate);
+
+    if (holiday != null) {
+      return "Dia " + date + " é " + holiday + "! 🎉";
+    } else {
+      return "Dia " + date + " não é feriado 🥲";
+    }
   }
 }
